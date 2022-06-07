@@ -9,6 +9,7 @@ numpy = "*"
 tqdm = "*"
 requests = "*"
 matplotlib = "*"
+sklearn = "*"
 
 [dev-packages]
 jupyter = "*"
