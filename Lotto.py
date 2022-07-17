@@ -7,8 +7,8 @@ from tqdm import tqdm
 
 
 class LottoNum:
-    def __init__(self, max_round:int) -> None:
-        self.max_round = max_round # latest lotto round
+    def __init__(self, start_drw:int) -> None:
+        self.start_drw = start_drw # latest lotto round
         self.url = "https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=" # dhlottery API url
         self.num_df, self.num_dict = self.crawl()
         self.pred = self.predict()
@@ -16,7 +16,7 @@ class LottoNum:
 
     def crawl(self) -> Tuple[pd.DataFrame, dict]:
         num_dict = {}
-
+        start_drw = self.start_drw
         for i in range(45):
             num_dict["{}".format(i+1)] = 0
         
@@ -28,12 +28,13 @@ class LottoNum:
         num5 = []
         num6 = []
         bonus_num = []
- 
-        for r in tqdm(range(self.max_round)):
-            url = self.url + "{0}".format(r+1)
-            round_num.append(r+1)
+        while True:
+            url = self.url + "{0}".format(start_drw)
             req = requests.get(url)
             json_data = req.json()
+
+            if json_data["returnValue"] == "fail":
+                break
             
             for i in range(6):
                 n = i+1
@@ -51,7 +52,10 @@ class LottoNum:
                     num6.append(json_data["drwtNo6"])
                 else:
                     continue
+            
+            round_num.append(start_drw)
             bonus_num.append(json_data["bnusNo"])
+            start_drw += 1
 
         num_df = pd.DataFrame({"round":round_num, "num1":num1, "num2":num2, "num3":num3, 
                                 "num4":num4, "num5":num5, "num6": num6, "bonus":bonus_num})
