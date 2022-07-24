@@ -1,8 +1,9 @@
-from random import sample
 from typing import Tuple
+import random
 
 import requests
 import pandas as pd
+from scipy import rand
 from tqdm import tqdm
 
 
@@ -11,6 +12,7 @@ class LottoNum:
         self.start_drw = start_drw # latest lotto round
         self.url = "https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=" # dhlottery API url
         self.num_df, self.num_dict = self.crawl()
+        self.mean_num = round(sum(list(self.num_dict.values()))/len(list(self.num_dict.values())))
         self.pred = self.predict()
 
 
@@ -66,7 +68,6 @@ class LottoNum:
         
         # self.num_df = num_df
         # self.num_dict = num_dict
-
         return num_df, num_dict
     
     
@@ -78,22 +79,31 @@ class LottoNum:
         #df_res = []
         
         for i in range(45):
-            nums.append(i+1)
+            i = i+1
+            num_ls = [i]
+            num_ls = num_ls * (50+(self.mean_num - self.num_dict[f"{i}"]))
+            nums.extend(num_ls)
         
-        for i in range(3):
-            out = sample(nums, 6)
+        for i in range(5):
+            out = []
+            nums2 = nums
+            for j in range(6):
+                choice_num = random.choice(nums2)
+                out.append(choice_num)
+                while choice_num in nums2:
+                    nums2.remove(choice_num)
             out.sort()
             res.append(out)
         
-        sorted_dict = sorted(self.num_dict.items(), key = lambda item: item[1])
+        # sorted_dict = sorted(self.num_dict.items(), key = lambda item: item[1])
         
-        for i in range(6):
-            dict_res.append(int(sorted_dict[i][0]))
-            dict_res2.append(int(sorted_dict[-(i+1)][0]))
-            # df_res.append(round(float(self.num_df["num{0}".format(i+1)].describe()["mean"])))
-        dict_res.sort()
-        dict_res2.sort()
-        res.append(dict_res)
-        res.append(dict_res2)        
+        # for i in range(6):
+        #     dict_res.append(int(sorted_dict[i][0]))
+        #     dict_res2.append(int(sorted_dict[-(i+1)][0]))
+        #     # df_res.append(round(float(self.num_df["num{0}".format(i+1)].describe()["mean"])))
+        # dict_res.sort()
+        # dict_res2.sort()
+        # res.append(dict_res)
+        # res.append(dict_res2)        
         
         return res
