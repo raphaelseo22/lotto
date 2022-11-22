@@ -2,6 +2,7 @@ from typing import Tuple
 import random
 
 import requests
+import numpy as np
 import pandas as pd
 from scipy import rand
 from tqdm import tqdm
@@ -77,23 +78,42 @@ class LottoNum:
         dict_res = []
         dict_res2 = []
         #df_res = []
+        number = np.array(range(45)) + 1
+        prob = []
         
-        for i in range(45):
-            i = i+1
-            num_ls = [i]
-            num_ls = num_ls * (50+(self.mean_num - self.num_dict[f"{i}"]))
-            nums.extend(num_ls)
+        for i in number:
+            p = 0.022 + (0.001 * (self.mean_num - self.num_dict[f"{i}"]))
+            prob.append(p)
+        
+        if sum(prob) < 1:
+            d =  1 - sum(prob)
+            number = np.append(number, 0)
+            prob.append(d)
         
         for i in range(5):
-            out = []
-            nums2 = nums
-            for j in range(6):
-                choice_num = random.choice(nums2)
-                out.append(choice_num)
-                while choice_num in nums2:
-                    nums2.remove(choice_num)
-            out.sort()
-            res.append(out)
+            val = True
+            while val:
+                result_number = np.random.choice(number, 6, p=prob, replace=False)
+                if not 0 in result_number:
+                    val = False
+            res.append(result_number)
+
+        # for i in range(45):
+        #     i = i+1
+        #     num_ls = [i]
+        #     num_ls = num_ls * (50+(self.mean_num - self.num_dict[f"{i}"]))
+        #     nums.extend(num_ls)
+        
+        # for i in range(5):
+        #     out = []
+        #     nums2 = nums
+        #     for j in range(6):
+        #         choice_num = random.choice(nums2)
+        #         out.append(choice_num)
+        #         while choice_num in nums2:
+        #             nums2.remove(choice_num)
+        #     out.sort()
+        #     res.append(out)
         
         # sorted_dict = sorted(self.num_dict.items(), key = lambda item: item[1])
         
